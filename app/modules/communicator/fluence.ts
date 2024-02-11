@@ -3,11 +3,16 @@ const FluenceService = require('geesome-libs/src/fluenceService');
 
 module.exports = async (app: IGeesomeApp) => {
     // let neighbours = await dhtApi.getNeighbours(client, nodeId, 'topic')
-    let peer = await require('./setupFluencePeer')(app);
-    const fluenceService = new FluenceService(app.ms.accountStorage, peer, {logLevel: null /*'debug'*/});
-    fluenceService.setup = async () => {
-        fluenceService.setPeer(await require('./setupFluencePeer')(app));
-        fluenceService.registerEvents();
+    const fluenceService = new FluenceService(app.ms.accountStorage, {logLevel: null /*'debug'*/});
+    const peerId = await app.ms.accountStorage.getAccountPeerId('self');
+    if(peerId) {
+        await fluenceService.initClient({
+            type: "Ed25519",
+            source: peerId.privKey.bytes
+        });
+    }
+    fluenceService.stop = async () => {
+
     }
     return fluenceService;
 }

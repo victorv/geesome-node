@@ -736,7 +736,7 @@ function getModule(app: IGeesomeApp) {
 		}
 
 		async getDataPath(dataPath) {
-			dataPath = _.trim(dataPath, '/')
+			dataPath = _.trimStart(dataPath, '/')
 			console.log('dataPath', dataPath);
 
 			let splitPath = dataPath.split('.');
@@ -756,16 +756,21 @@ function getModule(app: IGeesomeApp) {
 		async getFileStreamForApiRequest(req, res, dataPath) {
 			app.ms.api.setStorageHeaders(res);
 
+			console.log('getDataPath', dataPath);
 			dataPath = await this.getDataPath(dataPath);
+			console.log('dataPath', dataPath);
 
 			let range = req.headers['range'];
 			if (!range) {
 				let content = await app.ms.database.getContentByStorageId(dataPath, false);
 				if (!content && dataPath.split('/').length > 1) {
+					console.log('getContentByStorageId', dataPath.split('/')[0]);
 					content = await app.ms.database.getContentByStorageId(dataPath.split('/')[0], false);
 				}
+				console.log('content', content);
 				if (content) {
 					const contentType = content.storageId === dataPath ? content.mimeType : content.previewMimeType;
+					console.log('contentType', contentType);
 					if (contentType) {
 						res.setHeader('Content-Type', contentType);
 					}
@@ -780,13 +785,12 @@ function getModule(app: IGeesomeApp) {
 
 			console.log('getContentByStorageId', dataPath);
 			const content = await this.getContentByStorageId(dataPath);
-			console.log('content.mimeType', dataPath, content.mimeType);
-			if (content.mimeType === ContentMimeType.Directory) {
+			if (content && content.mimeType === ContentMimeType.Directory) {
+				// console.log('content.mimeType', dataPath, content.mimeType);
 				dataPath += '/index.html';
 			}
-			// }
 			const dataSize = await this.getFileSize(dataPath, content);
-			if (_.startsWith(content.mimeType, 'image/') || content.mimeType === ContentMimeType.Directory) {
+			if (content && (_.startsWith(content.mimeType, 'image/') || content.mimeType === ContentMimeType.Directory)) {
 				res.writeHead(200, await this.getIpfsHashHeadersObj(content, dataPath, dataSize, false));
 				return res.send(this.getFileStream(dataPath));
 			}

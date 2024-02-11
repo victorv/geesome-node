@@ -17,20 +17,23 @@ RUN apt-get install python build-essential pkg-config libglib2.0-dev libexpat1-d
 #RUN curl -OL https://github.com/libvips/libvips/releases/download/v8.12.2/vips-8.12.2.tar.gz && tar xf vips-8.12.2.tar.gz
 #RUN cd vips-8.12.2 && ./configure && make && make install
 
-RUN curl -fsSL https://deb.nodesource.com/setup_16.x | bash -
-RUN apt-get install -y nodejs
-RUN curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -
-RUN echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list
-RUN apt update
-RUN apt install yarn
+RUN mkdir /usr/local/nvm
+ENV NVM_DIR /usr/local/nvm
+# https://github.com/nodejs/node/issues/46221
+ENV NODE_VERSION 18.12.1
+
+RUN curl --silent -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.4/install.sh | bash
+RUN \. $NVM_DIR/nvm.sh
+ENV NODE_PATH $NVM_DIR/v$NODE_VERSION/lib/node_modules
+ENV PATH $NVM_DIR/versions/node/v$NODE_VERSION/bin:$PATH
+
+RUN npm i -g yarn
 
 RUN git clone https://github.com/galtproject/geesome-node.git
 WORKDIR "/geesome-node"
-RUN yarn
+#RUN git checkout improve
+RUN yarn -W --no-optional
 RUN npm rebuild youtube-dl #https://github.com/przemyslawpluta/node-youtube-dl/issues/131
 
-RUN cd frontend && yarn && npm run build
-
-ENV STORAGE_REPO=/root/.jsipfs
-ENV STORAGE_HOST=go_ipfs
 ENV STORAGE_MODULE=ipfs-http-client
+ENV STORAGE_URL=http://go_ipfs:5001

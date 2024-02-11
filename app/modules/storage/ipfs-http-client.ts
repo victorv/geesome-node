@@ -11,9 +11,9 @@ import {IGeesomeApp} from "../../interface";
 
 const JsIpfsServiceNode = require("geesome-libs/src/JsIpfsServiceNode");
 
-const { create } = require('ipfs-http-client');
-
 module.exports = async (app: IGeesomeApp) => {
+  const { create } = await import('ipfs-http-client');
+  console.log('ipfs-http-client create', app.config.storageConfig.goNode);
   const node = create(app.config.storageConfig.goNode);
   console.log('🎁 IPFS node have connected, profile:', process.env.IPFS_PROFILE);
   const service = new JsIpfsServiceNode(node);
@@ -21,6 +21,9 @@ module.exports = async (app: IGeesomeApp) => {
     return false;
   };
 
+  //TODO: remove config setting after migration to new ipfs http client
+  await service.node.config.set('Addresses.Swarm', await service.node.config.get('Addresses.Swarm').then(list => list.filter(s => !s.includes('quic'))));
+  await service.node.config.set('Bootstrap', await service.node.config.get('Bootstrap').then(list => list.filter(s => !s.includes('quic'))));
   if (process.env.IPFS_PROFILE) {
     await service.node.config.profiles.apply(process.env.IPFS_PROFILE);
   }

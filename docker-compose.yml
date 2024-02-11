@@ -17,9 +17,17 @@ services:
       - IPFS_PROFILE
       - DEBUG
       - SSG_RUNTIME
+
+  client:
+    image: nginx
+    ports:
+      - "127.0.0.1:2042:80"
+    volumes:
+      - "${GEESOME_FRONTEND_DIST}:/usr/share/nginx/html"
+
   ipfs:
     container_name: go_ipfs
-    image: "ipfs/go-ipfs:v0.9.1"
+    image: "ipfs/kubo:v0.21.0"
     restart: always
     environment:
       - IPFS_PROFILE

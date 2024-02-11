@@ -11,7 +11,7 @@
 const modulePacks = {
   'main': ['drivers', 'database', 'api', 'accountStorage', 'communicator', 'storage', 'content', 'staticId', 'asyncOperation', 'group', 'entityJsonManifest', 'remoteGroup'],
   'improve': ['groupCategory', 'invite', 'staticSiteGenerator', 'rss', 'autoActions', 'pin', 'foreignAccounts', 'ethereumAuthorization', 'fileCatalog', 'gateway'],
-  'socNet': ['socNetAccount', 'socNetImport', 'telegramClient', 'twitterClient']
+  'socNet': ['socNetAccount', 'socNetImport', 'telegramClient', 'twitterClient', 'tgContentBot']
 };
 
 //TODO: refactor modules config
@@ -25,12 +25,7 @@ module.exports = {
       pass: '',
       // repo: '~/.jsipfs',
     },
-    goNode: {
-      // host: 'ipfs.infura.io', port: '5001', protocol: 'https'
-      host: process.env.STORAGE_HOST || 'localhost',
-      port: process.env.STORAGE_PORT || '5001',
-      protocol: process.env.STORAGE_PORT || 'http'
-    }
+    goNode: {url: process.env.STORAGE_URL || 'http://127.0.0.1:5001'}
   },
   modules: process.env.MODULES ? process.env.MODULES.split(',') : modulePacks.main.concat(modulePacks.improve).concat(modulePacks.socNet)
 };
